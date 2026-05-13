@@ -14,16 +14,247 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      location_logs: {
+        Row: {
+          accuracy: number | null
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      matches: {
+        Row: {
+          created_at: string
+          id: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: []
+      }
+      photos: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean
+          position: number
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          position?: number
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          position?: number
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          bio: string | null
+          city: string | null
+          county: string | null
+          created_at: string
+          dob: string | null
+          full_name: string | null
+          gender: Database["public"]["Enums"]["gender_t"] | null
+          hosting: Database["public"]["Enums"]["hosting_pref"] | null
+          id: string
+          interested_in: Database["public"]["Enums"]["gender_t"][] | null
+          is_banned: boolean
+          is_hidden: boolean
+          is_verified: boolean
+          is_vip: boolean
+          last_active: string
+          lat: number | null
+          lng: number | null
+          onboarded: boolean
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          bio?: string | null
+          city?: string | null
+          county?: string | null
+          created_at?: string
+          dob?: string | null
+          full_name?: string | null
+          gender?: Database["public"]["Enums"]["gender_t"] | null
+          hosting?: Database["public"]["Enums"]["hosting_pref"] | null
+          id: string
+          interested_in?: Database["public"]["Enums"]["gender_t"][] | null
+          is_banned?: boolean
+          is_hidden?: boolean
+          is_verified?: boolean
+          is_vip?: boolean
+          last_active?: string
+          lat?: number | null
+          lng?: number | null
+          onboarded?: boolean
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          bio?: string | null
+          city?: string | null
+          county?: string | null
+          created_at?: string
+          dob?: string | null
+          full_name?: string | null
+          gender?: Database["public"]["Enums"]["gender_t"] | null
+          hosting?: Database["public"]["Enums"]["hosting_pref"] | null
+          id?: string
+          interested_in?: Database["public"]["Enums"]["gender_t"][] | null
+          is_banned?: boolean
+          is_hidden?: boolean
+          is_verified?: boolean
+          is_vip?: boolean
+          last_active?: string
+          lat?: number | null
+          lng?: number | null
+          onboarded?: boolean
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          status: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          status?: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          status?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
+      swipes: {
+        Row: {
+          action: Database["public"]["Enums"]["swipe_action"]
+          created_at: string
+          id: string
+          swiper_id: string
+          target_id: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["swipe_action"]
+          created_at?: string
+          id?: string
+          swiper_id: string
+          target_id: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["swipe_action"]
+          created_at?: string
+          id?: string
+          swiper_id?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      distance_km: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "user" | "moderator" | "admin"
+      gender_t: "male" | "female" | "non_binary" | "other"
+      hosting_pref: "hosting" | "to_be_hosted" | "lets_get_a_room"
+      swipe_action: "like" | "super_like" | "pass"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +381,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["user", "moderator", "admin"],
+      gender_t: ["male", "female", "non_binary", "other"],
+      hosting_pref: ["hosting", "to_be_hosted", "lets_get_a_room"],
+      swipe_action: ["like", "super_like", "pass"],
+    },
   },
 } as const
