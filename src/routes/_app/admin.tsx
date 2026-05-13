@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Shield, Loader2, Crown, Power, ArrowLeft, Plus, Wallet } from "lucide-react";
+import { Shield, Loader2, Crown, Power, ArrowLeft, Plus, Wallet, Trash2, Eye, EyeOff } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -20,6 +20,7 @@ function Admin() {
   const [cost, setCost] = useState(0.25);
   const [users, setUsers] = useState<Array<{ id: string; full_name: string | null; username: string | null; is_vip: boolean; is_banned: boolean }>>([]);
   const [stats, setStats] = useState({ users: 0, matches: 0, messages: 0, bookings: 0 });
+  const [adminRooms, setAdminRooms] = useState<Array<{ id: string; name: string; city: string | null; price_kes: number; is_active: boolean; capacity: number }>>([]);
   const [newRoom, setNewRoom] = useState({ name: "", city: "", price_kes: 3500, capacity: 2, cover_url: "", description: "" });
 
   const claim = useServerFn(claimFirstAdmin);
@@ -37,15 +38,17 @@ function Admin() {
     if (cfg) { setFreeChat(cfg.free_chat_enabled); setCost(Number(cfg.message_cost_kes)); }
 
     if (roles) {
-      const [{ data: us }, uc, mc, msgc, bc] = await Promise.all([
+      const [{ data: us }, uc, mc, msgc, bc, { data: rms }] = await Promise.all([
         supabase.from("profiles").select("id, full_name, username, is_vip, is_banned").order("created_at", { ascending: false }).limit(50),
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("matches").select("*", { count: "exact", head: true }),
         supabase.from("messages").select("*", { count: "exact", head: true }),
         supabase.from("room_bookings").select("*", { count: "exact", head: true }),
+        supabase.from("rooms").select("id, name, city, price_kes, is_active, capacity").order("created_at", { ascending: false }),
       ]);
       setUsers((us ?? []) as never);
       setStats({ users: uc.count ?? 0, matches: mc.count ?? 0, messages: msgc.count ?? 0, bookings: bc.count ?? 0 });
+      setAdminRooms((rms ?? []) as never);
     }
     setLoading(false);
   };
@@ -83,7 +86,17 @@ function Admin() {
     e.preventDefault();
     const { error } = await supabase.from("rooms").insert(newRoom);
     if (error) toast.error(error.message);
-    else { toast.success("Room added"); setNewRoom({ name: "", city: "", price_kes: 3500, capacity: 2, cover_url: "", description: "" }); }
+    else { toast.success("Room added"); setNewRoom({ name: "", city: "", price_kes: 3500, capacity: 2, cover_url: "", description: "" }); refresh(); }
+  };
+
+  const toggleRoom = async (id: string, next: boolean) => {
+    const { error } = await supabase.from("rooms").update({ is_active: next }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success(next ? "Room activated" : "Room hidden"); refresh(); }
+  };
+  const removeRoom = async (id: string) => {
+    if (!confirm("Delete this room? Existing bookings will keep their reference.")) return;
+    const { error } = await supabase.from("rooms").delete().eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Room deleted"); refresh(); }
   };
 
   if (loading) return <div className="flex h-screen items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-blood" /></div>;
