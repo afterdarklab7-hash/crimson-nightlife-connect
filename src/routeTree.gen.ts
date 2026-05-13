@@ -18,6 +18,7 @@ import { Route as AppMessagesRouteImport } from './routes/_app/messages'
 import { Route as AppMeRouteImport } from './routes/_app/me'
 import { Route as AppMatchesRouteImport } from './routes/_app/matches'
 import { Route as AppDiscoverRouteImport } from './routes/_app/discover'
+import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppMessagesMatchIdRouteImport } from './routes/_app/messages.$matchId'
 
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -64,6 +65,11 @@ const AppDiscoverRoute = AppDiscoverRouteImport.update({
   path: '/discover',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMessagesMatchIdRoute = AppMessagesMatchIdRouteImport.update({
   id: '/$matchId',
   path: '/$matchId',
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin': typeof AppAdminRoute
   '/discover': typeof AppDiscoverRoute
   '/matches': typeof AppMatchesRoute
   '/me': typeof AppMeRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/admin': typeof AppAdminRoute
   '/discover': typeof AppDiscoverRoute
   '/matches': typeof AppMatchesRoute
   '/me': typeof AppMeRoute
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
+  '/_app/admin': typeof AppAdminRoute
   '/_app/discover': typeof AppDiscoverRoute
   '/_app/matches': typeof AppMatchesRoute
   '/_app/me': typeof AppMeRoute
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/admin'
     | '/discover'
     | '/matches'
     | '/me'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/onboarding'
+    | '/admin'
     | '/discover'
     | '/matches'
     | '/me'
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/auth'
     | '/onboarding'
+    | '/_app/admin'
     | '/_app/discover'
     | '/_app/matches'
     | '/_app/me'
@@ -214,6 +226,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDiscoverRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/messages/$matchId': {
       id: '/_app/messages/$matchId'
       path: '/$matchId'
@@ -237,6 +256,7 @@ const AppMessagesRouteWithChildren = AppMessagesRoute._addFileChildren(
 )
 
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
   AppDiscoverRoute: typeof AppDiscoverRoute
   AppMatchesRoute: typeof AppMatchesRoute
   AppMeRoute: typeof AppMeRoute
@@ -245,6 +265,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
   AppDiscoverRoute: AppDiscoverRoute,
   AppMatchesRoute: AppMatchesRoute,
   AppMeRoute: AppMeRoute,
@@ -263,3 +284,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
