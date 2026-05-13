@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, ShieldCheck, Crown, MapPin, Edit3, EyeOff, Eye } from "lucide-react";
+import { LogOut, ShieldCheck, Crown, MapPin, Edit3, EyeOff, Eye, Shield, Wallet } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { supabase } from "@/integrations/supabase/client";
