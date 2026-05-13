@@ -172,6 +172,30 @@ function Admin() {
           </form>
         </section>
 
+        {/* Manage rooms */}
+        <section className="glass-card rounded-2xl p-5">
+          <h2 className="font-display text-lg">Manage rooms ({adminRooms.length})</h2>
+          <ul className="mt-3 divide-y divide-border/60">
+            {adminRooms.length === 0 && <li className="py-3 text-xs text-muted-foreground">No rooms yet. Add one above.</li>}
+            {adminRooms.map((r) => (
+              <li key={r.id} className="flex items-center justify-between py-3 gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm">{r.name}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {r.city ?? "—"} · KES {Number(r.price_kes).toLocaleString()}/hr · cap {r.capacity} · {r.is_active ? <span className="text-success">live</span> : <span className="text-muted-foreground">hidden</span>}
+                  </p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <button onClick={() => toggleRoom(r.id, !r.is_active)} className="rounded-full border border-border/60 px-3 py-1.5 text-[10px] uppercase tracking-wider hover:border-blood/40">
+                    {r.is_active ? <><EyeOff className="inline h-3 w-3" /> Hide</> : <><Eye className="inline h-3 w-3" /> Show</>}
+                  </button>
+                  <button onClick={() => removeRoom(r.id)} className="rounded-full border border-blood/40 px-3 py-1.5 text-[10px] uppercase tracking-wider text-blood hover:bg-blood/10"><Trash2 className="inline h-3 w-3" /> Delete</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         {/* Users */}
         <section className="glass-card rounded-2xl p-5">
           <h2 className="font-display text-lg">Members ({users.length})</h2>
