@@ -80,10 +80,14 @@ function Thread() {
       setBody(text);
     } else if (data) {
       setMsgs((prev) => prev.some((m) => m.id === data.id) ? prev : [...prev, data as Msg]);
-      if (!freeChat) setBalance((b) => (b ?? 0) - cost);
+      const nextSent = sentCount + 1;
+      setSentCount(nextSent);
+      if (!freeChat && nextSent > quota) setBalance((b) => (b ?? 0) - cost);
     }
     setSending(false);
   };
+
+  const freeLeft = Math.max(0, quota - sentCount);
 
   return (
     <div className="relative flex h-screen flex-col bg-background">
@@ -95,7 +99,9 @@ function Thread() {
           </div>
           <div>
             <p className="text-sm font-semibold">{other?.name ?? "…"}</p>
-            <p className="text-[10px] uppercase tracking-wider text-blood">{freeChat ? "Free chat · live" : `KES ${cost.toFixed(2)}/msg`}</p>
+            <p className="text-[10px] uppercase tracking-wider text-blood">
+              {freeChat ? "Free chat · live" : freeLeft > 0 ? `${freeLeft} free message${freeLeft === 1 ? "" : "s"} left` : `KES ${cost.toFixed(2)}/msg`}
+            </p>
           </div>
         </Link>
       </header>
