@@ -74,7 +74,7 @@ function Onboarding() {
     if (!user) return;
     setSubmitting(true);
     try {
-      // Upload photos
+      // Upload photos (replace any existing set so re-edits don't pile up)
       const uploaded: { url: string; position: number; is_primary: boolean }[] = [];
       for (let i = 0; i < photos.length; i++) {
         const p = photos[i];
@@ -86,6 +86,8 @@ function Onboarding() {
         uploaded.push({ url: pub.publicUrl, position: i, is_primary: i === 0 });
       }
       if (uploaded.length) {
+        // Wipe previous photos so the new set is the source of truth
+        await supabase.from("photos").delete().eq("user_id", user.id);
         const { error: phErr } = await supabase
           .from("photos")
           .insert(uploaded.map((u) => ({ ...u, user_id: user.id })));
@@ -112,8 +114,8 @@ function Onboarding() {
         .eq("id", user.id);
       if (profErr) throw profErr;
 
-      // assign default role
-      await supabase.from("user_roles").insert({ user_id: user.id, role: "user" });
+      // assign default role (idempotent)
+      await supabase.from("user_roles").upsert({ user_id: user.id, role: "user" }, { onConflict: "user_id,role", ignoreDuplicates: true });
 
       // log location once
       if (coords) {
