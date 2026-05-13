@@ -92,7 +92,7 @@ function Matches() {
           <ul className="grid grid-cols-2 gap-3">
             {items.map((m) => (
               <li key={m.id}>
-                <Link to="/messages" className="group glass-card block overflow-hidden rounded-2xl">
+                <Link to="/messages/$matchId" params={{ matchId: m.id }} className="group glass-card block overflow-hidden rounded-2xl">
                   <div className="relative aspect-[3/4] bg-onyx">
                     {m.other.photo ? (
                       <img src={m.other.photo} alt="" className="h-full w-full object-cover transition-transform group-hover:scale-105" />

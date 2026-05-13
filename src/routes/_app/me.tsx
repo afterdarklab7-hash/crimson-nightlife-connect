@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LogOut, ShieldCheck, Crown, MapPin, Edit3, EyeOff, Eye } from "lucide-react";
+import { LogOut, ShieldCheck, Crown, MapPin, Edit3, EyeOff, Eye, Shield, Wallet } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,16 +14,14 @@ function Me() {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [photo, setPhoto] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [balance, setBalance] = useState<number>(0);
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("photos")
-      .select("url")
-      .eq("user_id", user.id)
-      .eq("is_primary", true)
-      .maybeSingle()
-      .then(({ data }) => setPhoto(data?.url ?? null));
+    supabase.from("photos").select("url").eq("user_id", user.id).eq("is_primary", true).maybeSingle().then(({ data }) => setPhoto(data?.url ?? null));
+    supabase.from("user_roles").select("id").eq("user_id", user.id).eq("role", "admin").maybeSingle().then(({ data }) => setIsAdmin(!!data));
+    supabase.from("wallets").select("balance_kes").eq("user_id", user.id).maybeSingle().then(({ data }) => setBalance(Number(data?.balance_kes ?? 0)));
   }, [user]);
 
   const toggleHidden = async () => {
@@ -84,7 +82,18 @@ function Me() {
           </div>
         </div>
 
-        <ul className="mt-6 space-y-2">
+        <div className="mt-6 glass-card flex items-center justify-between rounded-2xl px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-card/60"><Wallet className="h-4 w-4 text-blood" /></div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Wallet</p>
+              <p className="font-display text-xl">KES {balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+            </div>
+          </div>
+          <span className="rounded-full border border-border/60 bg-card/40 px-2.5 py-1 text-[9px] uppercase tracking-wider text-muted-foreground">M-Pesa soon</span>
+        </div>
+
+        <ul className="mt-4 space-y-2">
           <Row icon={<Edit3 className="h-4 w-4" />} label="Edit profile" sub="Bio, photos, preferences" onClick={() => navigate({ to: "/onboarding" })} />
           <Row
             icon={(profile as unknown as { is_hidden?: boolean })?.is_hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -92,6 +101,7 @@ function Me() {
             sub={(profile as unknown as { is_hidden?: boolean })?.is_hidden ? "Your profile is hidden" : "Browse without being seen"}
             onClick={toggleHidden}
           />
+          <Row icon={<Shield className="h-4 w-4 text-blood" />} label={isAdmin ? "Admin console" : "Become admin"} sub={isAdmin ? "Manage everything" : "Claim ownership"} onClick={() => navigate({ to: "/admin" })} />
           <Row icon={<LogOut className="h-4 w-4 text-blood" />} label="Sign out" sub="See you tonight" onClick={async () => { await signOut(); navigate({ to: "/" }); }} />
         </ul>
 

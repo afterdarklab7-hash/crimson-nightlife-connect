@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_settings: {
+        Row: {
+          free_chat_enabled: boolean
+          id: number
+          message_cost_kes: number
+          updated_at: string
+        }
+        Insert: {
+          free_chat_enabled?: boolean
+          id?: number
+          message_cost_kes?: number
+          updated_at?: string
+        }
+        Update: {
+          free_chat_enabled?: boolean
+          id?: number
+          message_cost_kes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       location_logs: {
         Row: {
           accuracy: number | null
@@ -61,6 +82,44 @@ export type Database = {
           user_b?: string
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          match_id: string
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          match_id: string
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       photos: {
         Row: {
@@ -188,6 +247,95 @@ export type Database = {
         }
         Relationships: []
       }
+      room_bookings: {
+        Row: {
+          confirmation_code: string | null
+          created_at: string
+          ends_at: string
+          guests: number
+          id: string
+          room_id: string
+          starts_at: string
+          status: string
+          total_kes: number
+          user_id: string
+        }
+        Insert: {
+          confirmation_code?: string | null
+          created_at?: string
+          ends_at: string
+          guests?: number
+          id?: string
+          room_id: string
+          starts_at: string
+          status?: string
+          total_kes: number
+          user_id: string
+        }
+        Update: {
+          confirmation_code?: string | null
+          created_at?: string
+          ends_at?: string
+          guests?: number
+          id?: string
+          room_id?: string
+          starts_at?: string
+          status?: string
+          total_kes?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_bookings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          address: string | null
+          amenities: string[] | null
+          capacity: number
+          city: string | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price_kes: number
+        }
+        Insert: {
+          address?: string | null
+          amenities?: string[] | null
+          capacity?: number
+          city?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price_kes: number
+        }
+        Update: {
+          address?: string | null
+          amenities?: string[] | null
+          capacity?: number
+          city?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_kes?: number
+        }
+        Relationships: []
+      }
       swipes: {
         Row: {
           action: Database["public"]["Enums"]["swipe_action"]
@@ -229,6 +377,51 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_transactions: {
+        Row: {
+          amount_kes: number
+          created_at: string
+          id: string
+          kind: string
+          ref: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_kes: number
+          created_at?: string
+          id?: string
+          kind: string
+          ref?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_kes?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          ref?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallets: {
+        Row: {
+          balance_kes: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance_kes?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance_kes?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
