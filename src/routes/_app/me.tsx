@@ -14,16 +14,14 @@ function Me() {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [photo, setPhoto] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [balance, setBalance] = useState<number>(0);
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("photos")
-      .select("url")
-      .eq("user_id", user.id)
-      .eq("is_primary", true)
-      .maybeSingle()
-      .then(({ data }) => setPhoto(data?.url ?? null));
+    supabase.from("photos").select("url").eq("user_id", user.id).eq("is_primary", true).maybeSingle().then(({ data }) => setPhoto(data?.url ?? null));
+    supabase.from("user_roles").select("id").eq("user_id", user.id).eq("role", "admin").maybeSingle().then(({ data }) => setIsAdmin(!!data));
+    supabase.from("wallets").select("balance_kes").eq("user_id", user.id).maybeSingle().then(({ data }) => setBalance(Number(data?.balance_kes ?? 0)));
   }, [user]);
 
   const toggleHidden = async () => {
