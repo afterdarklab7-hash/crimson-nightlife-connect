@@ -22,6 +22,8 @@ function Thread() {
   const [freeChat, setFreeChat] = useState(true);
   const [cost, setCost] = useState(0.25);
   const [balance, setBalance] = useState<number | null>(null);
+  const [quota, setQuota] = useState(20);
+  const [sentCount, setSentCount] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,15 +32,21 @@ function Thread() {
       const { data: m } = await supabase.from("matches").select("*").eq("id", matchId).maybeSingle();
       if (!m) { toast.error("Conversation not found"); navigate({ to: "/messages" }); return; }
       const otherId = m.user_a === user.id ? m.user_b : m.user_a;
-      const [{ data: p }, { data: pic }, { data: cfg }, { data: w }] = await Promise.all([
+      const [{ data: p }, { data: pic }, { data: cfg }, { data: w }, { count: sc }] = await Promise.all([
         supabase.from("profiles").select("id, full_name, username").eq("id", otherId).maybeSingle(),
         supabase.from("photos").select("url").eq("user_id", otherId).eq("is_primary", true).maybeSingle(),
         supabase.from("chat_settings").select("*").eq("id", 1).maybeSingle(),
         supabase.from("wallets").select("balance_kes").eq("user_id", user.id).maybeSingle(),
+        supabase.from("messages").select("*", { count: "exact", head: true }).eq("sender_id", user.id),
       ]);
       setOther({ id: otherId, name: p?.full_name ?? p?.username ?? "Member", photo: pic?.url ?? null });
-      if (cfg) { setFreeChat(cfg.free_chat_enabled); setCost(Number(cfg.message_cost_kes)); }
+      if (cfg) {
+        setFreeChat(cfg.free_chat_enabled);
+        setCost(Number(cfg.message_cost_kes));
+        setQuota(Number((cfg as { free_message_quota?: number }).free_message_quota ?? 20));
+      }
       setBalance(Number(w?.balance_kes ?? 0));
+      setSentCount(sc ?? 0);
 
       const { data: list } = await supabase.from("messages").select("*").eq("match_id", matchId).order("created_at", { ascending: true });
       setMsgs((list ?? []) as Msg[]);
@@ -72,10 +80,14 @@ function Thread() {
       setBody(text);
     } else if (data) {
       setMsgs((prev) => prev.some((m) => m.id === data.id) ? prev : [...prev, data as Msg]);
-      if (!freeChat) setBalance((b) => (b ?? 0) - cost);
+      const nextSent = sentCount + 1;
+      setSentCount(nextSent);
+      if (!freeChat && nextSent > quota) setBalance((b) => (b ?? 0) - cost);
     }
     setSending(false);
   };
+
+  const freeLeft = Math.max(0, quota - sentCount);
 
   return (
     <div className="relative flex h-screen flex-col bg-background">
@@ -87,7 +99,9 @@ function Thread() {
           </div>
           <div>
             <p className="text-sm font-semibold">{other?.name ?? "…"}</p>
-            <p className="text-[10px] uppercase tracking-wider text-blood">{freeChat ? "Free chat · live" : `KES ${cost.toFixed(2)}/msg`}</p>
+            <p className="text-[10px] uppercase tracking-wider text-blood">
+              {freeChat ? "Free chat · live" : freeLeft > 0 ? `${freeLeft} free message${freeLeft === 1 ? "" : "s"} left` : `KES ${cost.toFixed(2)}/msg`}
+            </p>
           </div>
         </Link>
       </header>
@@ -118,8 +132,14 @@ function Thread() {
       </div>
 
       <div className="safe-bottom border-t border-border/60 bg-coal/90 p-3 backdrop-blur-xl">
-        {!freeChat && balance !== null && (
-          <p className="mb-2 text-center text-[10px] uppercase tracking-wider text-muted-foreground">Balance: <span className="text-blood">KES {balance.toFixed(2)}</span></p>
+        {!freeChat && (
+          freeLeft > 0 ? (
+            <p className="mb-2 text-center text-[10px] uppercase tracking-wider text-muted-foreground">
+              <span className="text-blood">{freeLeft}</span> free message{freeLeft === 1 ? "" : "s"} left · then KES {cost.toFixed(2)}/msg
+            </p>
+          ) : balance !== null ? (
+            <p className="mb-2 text-center text-[10px] uppercase tracking-wider text-muted-foreground">Balance: <span className="text-blood">KES {balance.toFixed(2)}</span></p>
+          ) : null
         )}
         <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex items-end gap-2">
           <textarea

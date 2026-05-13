@@ -17,18 +17,21 @@ export type Database = {
       chat_settings: {
         Row: {
           free_chat_enabled: boolean
+          free_message_quota: number
           id: number
           message_cost_kes: number
           updated_at: string
         }
         Insert: {
           free_chat_enabled?: boolean
+          free_message_quota?: number
           id?: number
           message_cost_kes?: number
           updated_at?: string
         }
         Update: {
           free_chat_enabled?: boolean
+          free_message_quota?: number
           id?: number
           message_cost_kes?: number
           updated_at?: string

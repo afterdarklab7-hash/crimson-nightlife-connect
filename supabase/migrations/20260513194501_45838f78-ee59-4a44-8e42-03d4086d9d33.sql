@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.debit_message() FROM PUBLIC, anon, authenticated;
