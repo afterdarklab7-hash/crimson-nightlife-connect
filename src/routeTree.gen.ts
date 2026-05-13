@@ -18,6 +18,7 @@ import { Route as AppMessagesRouteImport } from './routes/_app/messages'
 import { Route as AppMeRouteImport } from './routes/_app/me'
 import { Route as AppMatchesRouteImport } from './routes/_app/matches'
 import { Route as AppDiscoverRouteImport } from './routes/_app/discover'
+import { Route as AppMessagesMatchIdRouteImport } from './routes/_app/messages.$matchId'
 
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
@@ -63,6 +64,11 @@ const AppDiscoverRoute = AppDiscoverRouteImport.update({
   path: '/discover',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMessagesMatchIdRoute = AppMessagesMatchIdRouteImport.update({
+  id: '/$matchId',
+  path: '/$matchId',
+  getParentRoute: () => AppMessagesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -71,8 +77,9 @@ export interface FileRoutesByFullPath {
   '/discover': typeof AppDiscoverRoute
   '/matches': typeof AppMatchesRoute
   '/me': typeof AppMeRoute
-  '/messages': typeof AppMessagesRoute
+  '/messages': typeof AppMessagesRouteWithChildren
   '/rooms': typeof AppRoomsRoute
+  '/messages/$matchId': typeof AppMessagesMatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -81,8 +88,9 @@ export interface FileRoutesByTo {
   '/discover': typeof AppDiscoverRoute
   '/matches': typeof AppMatchesRoute
   '/me': typeof AppMeRoute
-  '/messages': typeof AppMessagesRoute
+  '/messages': typeof AppMessagesRouteWithChildren
   '/rooms': typeof AppRoomsRoute
+  '/messages/$matchId': typeof AppMessagesMatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -93,8 +101,9 @@ export interface FileRoutesById {
   '/_app/discover': typeof AppDiscoverRoute
   '/_app/matches': typeof AppMatchesRoute
   '/_app/me': typeof AppMeRoute
-  '/_app/messages': typeof AppMessagesRoute
+  '/_app/messages': typeof AppMessagesRouteWithChildren
   '/_app/rooms': typeof AppRoomsRoute
+  '/_app/messages/$matchId': typeof AppMessagesMatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/messages'
     | '/rooms'
+    | '/messages/$matchId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/messages'
     | '/rooms'
+    | '/messages/$matchId'
   id:
     | '__root__'
     | '/'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/_app/me'
     | '/_app/messages'
     | '/_app/rooms'
+    | '/_app/messages/$matchId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -202,14 +214,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDiscoverRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/messages/$matchId': {
+      id: '/_app/messages/$matchId'
+      path: '/$matchId'
+      fullPath: '/messages/$matchId'
+      preLoaderRoute: typeof AppMessagesMatchIdRouteImport
+      parentRoute: typeof AppMessagesRoute
+    }
   }
 }
+
+interface AppMessagesRouteChildren {
+  AppMessagesMatchIdRoute: typeof AppMessagesMatchIdRoute
+}
+
+const AppMessagesRouteChildren: AppMessagesRouteChildren = {
+  AppMessagesMatchIdRoute: AppMessagesMatchIdRoute,
+}
+
+const AppMessagesRouteWithChildren = AppMessagesRoute._addFileChildren(
+  AppMessagesRouteChildren,
+)
 
 interface AppRouteChildren {
   AppDiscoverRoute: typeof AppDiscoverRoute
   AppMatchesRoute: typeof AppMatchesRoute
   AppMeRoute: typeof AppMeRoute
-  AppMessagesRoute: typeof AppMessagesRoute
+  AppMessagesRoute: typeof AppMessagesRouteWithChildren
   AppRoomsRoute: typeof AppRoomsRoute
 }
 
@@ -217,7 +248,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDiscoverRoute: AppDiscoverRoute,
   AppMatchesRoute: AppMatchesRoute,
   AppMeRoute: AppMeRoute,
-  AppMessagesRoute: AppMessagesRoute,
+  AppMessagesRoute: AppMessagesRouteWithChildren,
   AppRoomsRoute: AppRoomsRoute,
 }
 
