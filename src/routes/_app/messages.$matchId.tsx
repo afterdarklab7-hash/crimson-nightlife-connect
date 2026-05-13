@@ -132,8 +132,14 @@ function Thread() {
       </div>
 
       <div className="safe-bottom border-t border-border/60 bg-coal/90 p-3 backdrop-blur-xl">
-        {!freeChat && balance !== null && (
-          <p className="mb-2 text-center text-[10px] uppercase tracking-wider text-muted-foreground">Balance: <span className="text-blood">KES {balance.toFixed(2)}</span></p>
+        {!freeChat && (
+          freeLeft > 0 ? (
+            <p className="mb-2 text-center text-[10px] uppercase tracking-wider text-muted-foreground">
+              <span className="text-blood">{freeLeft}</span> free message{freeLeft === 1 ? "" : "s"} left · then KES {cost.toFixed(2)}/msg
+            </p>
+          ) : balance !== null ? (
+            <p className="mb-2 text-center text-[10px] uppercase tracking-wider text-muted-foreground">Balance: <span className="text-blood">KES {balance.toFixed(2)}</span></p>
+          ) : null
         )}
         <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex items-end gap-2">
           <textarea
