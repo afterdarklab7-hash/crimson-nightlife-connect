@@ -22,6 +22,8 @@ function Thread() {
   const [freeChat, setFreeChat] = useState(true);
   const [cost, setCost] = useState(0.25);
   const [balance, setBalance] = useState<number | null>(null);
+  const [quota, setQuota] = useState(20);
+  const [sentCount, setSentCount] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
