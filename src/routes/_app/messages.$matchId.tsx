@@ -32,15 +32,21 @@ function Thread() {
       const { data: m } = await supabase.from("matches").select("*").eq("id", matchId).maybeSingle();
       if (!m) { toast.error("Conversation not found"); navigate({ to: "/messages" }); return; }
       const otherId = m.user_a === user.id ? m.user_b : m.user_a;
-      const [{ data: p }, { data: pic }, { data: cfg }, { data: w }] = await Promise.all([
+      const [{ data: p }, { data: pic }, { data: cfg }, { data: w }, { count: sc }] = await Promise.all([
         supabase.from("profiles").select("id, full_name, username").eq("id", otherId).maybeSingle(),
         supabase.from("photos").select("url").eq("user_id", otherId).eq("is_primary", true).maybeSingle(),
         supabase.from("chat_settings").select("*").eq("id", 1).maybeSingle(),
         supabase.from("wallets").select("balance_kes").eq("user_id", user.id).maybeSingle(),
+        supabase.from("messages").select("*", { count: "exact", head: true }).eq("sender_id", user.id),
       ]);
       setOther({ id: otherId, name: p?.full_name ?? p?.username ?? "Member", photo: pic?.url ?? null });
-      if (cfg) { setFreeChat(cfg.free_chat_enabled); setCost(Number(cfg.message_cost_kes)); }
+      if (cfg) {
+        setFreeChat(cfg.free_chat_enabled);
+        setCost(Number(cfg.message_cost_kes));
+        setQuota(Number((cfg as { free_message_quota?: number }).free_message_quota ?? 20));
+      }
       setBalance(Number(w?.balance_kes ?? 0));
+      setSentCount(sc ?? 0);
 
       const { data: list } = await supabase.from("messages").select("*").eq("match_id", matchId).order("created_at", { ascending: true });
       setMsgs((list ?? []) as Msg[]);
