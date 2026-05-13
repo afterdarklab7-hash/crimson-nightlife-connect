@@ -79,11 +79,17 @@ function Onboarding() {
     return d <= eighteen;
   })();
 
+  const [hasExistingPhotos, setHasExistingPhotos] = useState(false);
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("photos").select("id", { count: "exact", head: true }).eq("user_id", user.id).then(({ count }) => setHasExistingPhotos((count ?? 0) > 0));
+  }, [user]);
+
   const canNext = (): boolean => {
     if (step === 0) return fullName.trim().length >= 2 && /^[a-z0-9_]{3,20}$/i.test(username);
     if (step === 1) return ageOk && !!gender;
     if (step === 2) return !!hosting;
-    if (step === 3) return photos.length >= 1;
+    if (step === 3) return photos.length >= 1 || hasExistingPhotos;
     return true;
   };
 
