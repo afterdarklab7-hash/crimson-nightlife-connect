@@ -27,10 +27,16 @@ function Rooms() {
   const [busy, setBusy] = useState(false);
   const [confirmed, setConfirmed] = useState<string | null>(null);
 
+  const loadRooms = () => supabase.from("rooms").select("*").eq("is_active", true).order("price_kes").then(({ data }) => {
+    setRooms((data ?? []) as Room[]); setLoading(false);
+  });
+
   useEffect(() => {
-    supabase.from("rooms").select("*").eq("is_active", true).order("price_kes").then(({ data }) => {
-      setRooms((data ?? []) as Room[]); setLoading(false);
-    });
+    loadRooms();
+    const ch = supabase.channel("rooms-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "rooms" }, () => loadRooms())
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, []);
 
   const book = async () => {

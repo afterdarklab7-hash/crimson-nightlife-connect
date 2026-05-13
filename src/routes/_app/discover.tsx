@@ -91,9 +91,17 @@ function Discover() {
           photoMap.set(ph.user_id, arr);
         }
       }
-      setCandidates(
-        filtered.map((p) => ({ ...p, photos: photoMap.get(p.id) ?? [] })),
-      );
+      const enriched = filtered.map((p) => ({ ...p, photos: photoMap.get(p.id) ?? [] }));
+      // Sort by distance when we know the viewer's location
+      const me = profile?.lat && profile?.lng ? { lat: profile.lat, lng: profile.lng } : null;
+      if (me) {
+        enriched.sort((a, b) => {
+          const da = a.lat && a.lng ? distKm(me, { lat: a.lat, lng: a.lng }) : Number.POSITIVE_INFINITY;
+          const db = b.lat && b.lng ? distKm(me, { lat: b.lat, lng: b.lng }) : Number.POSITIVE_INFINITY;
+          return da - db;
+        });
+      }
+      setCandidates(enriched);
       setIdx(0);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to load profiles";

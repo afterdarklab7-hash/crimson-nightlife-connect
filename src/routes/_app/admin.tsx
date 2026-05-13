@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Shield, Loader2, Crown, Power, ArrowLeft, Plus, Wallet } from "lucide-react";
+import { Shield, Loader2, Crown, Power, ArrowLeft, Plus, Wallet, Trash2, Eye, EyeOff } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -20,6 +20,7 @@ function Admin() {
   const [cost, setCost] = useState(0.25);
   const [users, setUsers] = useState<Array<{ id: string; full_name: string | null; username: string | null; is_vip: boolean; is_banned: boolean }>>([]);
   const [stats, setStats] = useState({ users: 0, matches: 0, messages: 0, bookings: 0 });
+  const [adminRooms, setAdminRooms] = useState<Array<{ id: string; name: string; city: string | null; price_kes: number; is_active: boolean; capacity: number }>>([]);
   const [newRoom, setNewRoom] = useState({ name: "", city: "", price_kes: 3500, capacity: 2, cover_url: "", description: "" });
 
   const claim = useServerFn(claimFirstAdmin);
@@ -37,15 +38,17 @@ function Admin() {
     if (cfg) { setFreeChat(cfg.free_chat_enabled); setCost(Number(cfg.message_cost_kes)); }
 
     if (roles) {
-      const [{ data: us }, uc, mc, msgc, bc] = await Promise.all([
+      const [{ data: us }, uc, mc, msgc, bc, { data: rms }] = await Promise.all([
         supabase.from("profiles").select("id, full_name, username, is_vip, is_banned").order("created_at", { ascending: false }).limit(50),
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase.from("matches").select("*", { count: "exact", head: true }),
         supabase.from("messages").select("*", { count: "exact", head: true }),
         supabase.from("room_bookings").select("*", { count: "exact", head: true }),
+        supabase.from("rooms").select("id, name, city, price_kes, is_active, capacity").order("created_at", { ascending: false }),
       ]);
       setUsers((us ?? []) as never);
       setStats({ users: uc.count ?? 0, matches: mc.count ?? 0, messages: msgc.count ?? 0, bookings: bc.count ?? 0 });
+      setAdminRooms((rms ?? []) as never);
     }
     setLoading(false);
   };
@@ -83,7 +86,17 @@ function Admin() {
     e.preventDefault();
     const { error } = await supabase.from("rooms").insert(newRoom);
     if (error) toast.error(error.message);
-    else { toast.success("Room added"); setNewRoom({ name: "", city: "", price_kes: 3500, capacity: 2, cover_url: "", description: "" }); }
+    else { toast.success("Room added"); setNewRoom({ name: "", city: "", price_kes: 3500, capacity: 2, cover_url: "", description: "" }); refresh(); }
+  };
+
+  const toggleRoom = async (id: string, next: boolean) => {
+    const { error } = await supabase.from("rooms").update({ is_active: next }).eq("id", id);
+    if (error) toast.error(error.message); else { toast.success(next ? "Room activated" : "Room hidden"); refresh(); }
+  };
+  const removeRoom = async (id: string) => {
+    if (!confirm("Delete this room? Existing bookings will keep their reference.")) return;
+    const { error } = await supabase.from("rooms").delete().eq("id", id);
+    if (error) toast.error(error.message); else { toast.success("Room deleted"); refresh(); }
   };
 
   if (loading) return <div className="flex h-screen items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-blood" /></div>;
@@ -157,6 +170,30 @@ function Admin() {
             <textarea placeholder="Description" value={newRoom.description} onChange={(e) => setNewRoom({ ...newRoom, description: e.target.value })} className="w-full rounded-2xl border border-border bg-input px-4 py-3 text-sm" />
             <button className="flex w-full items-center justify-center gap-2 rounded-full bg-blood-gradient py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white glow-blood"><Plus className="h-4 w-4" /> Create room</button>
           </form>
+        </section>
+
+        {/* Manage rooms */}
+        <section className="glass-card rounded-2xl p-5">
+          <h2 className="font-display text-lg">Manage rooms ({adminRooms.length})</h2>
+          <ul className="mt-3 divide-y divide-border/60">
+            {adminRooms.length === 0 && <li className="py-3 text-xs text-muted-foreground">No rooms yet. Add one above.</li>}
+            {adminRooms.map((r) => (
+              <li key={r.id} className="flex items-center justify-between py-3 gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm">{r.name}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {r.city ?? "—"} · KES {Number(r.price_kes).toLocaleString()}/hr · cap {r.capacity} · {r.is_active ? <span className="text-success">live</span> : <span className="text-muted-foreground">hidden</span>}
+                  </p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <button onClick={() => toggleRoom(r.id, !r.is_active)} className="rounded-full border border-border/60 px-3 py-1.5 text-[10px] uppercase tracking-wider hover:border-blood/40">
+                    {r.is_active ? <><EyeOff className="inline h-3 w-3" /> Hide</> : <><Eye className="inline h-3 w-3" /> Show</>}
+                  </button>
+                  <button onClick={() => removeRoom(r.id)} className="rounded-full border border-blood/40 px-3 py-1.5 text-[10px] uppercase tracking-wider text-blood hover:bg-blood/10"><Trash2 className="inline h-3 w-3" /> Delete</button>
+                </div>
+              </li>
+            ))}
+          </ul>
         </section>
 
         {/* Users */}

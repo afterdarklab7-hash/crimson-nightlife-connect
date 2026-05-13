@@ -33,6 +33,23 @@ function Onboarding() {
     if (!loading && !user) navigate({ to: "/auth", search: { mode: "signin" as const } });
   }, [loading, user, navigate]);
 
+  // Prefill from existing profile so re-edits don't wipe data
+  useEffect(() => {
+    if (!user) return;
+    void (async () => {
+      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+      if (!data) return;
+      if (data.full_name) setFullName(data.full_name);
+      if (data.username) setUsername(data.username);
+      if (data.dob) setDob(data.dob);
+      if (data.gender) setGender(data.gender);
+      if (data.hosting) setHosting(data.hosting);
+      if (data.bio) setBio(data.bio);
+      if (data.city) setCity(data.city);
+      if (data.lat && data.lng) setCoords({ lat: data.lat, lng: data.lng });
+    })();
+  }, [user]);
+
   const handlePhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     const next = files.slice(0, 6 - photos.length).map((f) => ({ file: f, url: URL.createObjectURL(f) }));
@@ -62,11 +79,17 @@ function Onboarding() {
     return d <= eighteen;
   })();
 
+  const [hasExistingPhotos, setHasExistingPhotos] = useState(false);
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("photos").select("id", { count: "exact", head: true }).eq("user_id", user.id).then(({ count }) => setHasExistingPhotos((count ?? 0) > 0));
+  }, [user]);
+
   const canNext = (): boolean => {
     if (step === 0) return fullName.trim().length >= 2 && /^[a-z0-9_]{3,20}$/i.test(username);
     if (step === 1) return ageOk && !!gender;
     if (step === 2) return !!hosting;
-    if (step === 3) return photos.length >= 1;
+    if (step === 3) return photos.length >= 1 || hasExistingPhotos;
     return true;
   };
 
@@ -74,7 +97,7 @@ function Onboarding() {
     if (!user) return;
     setSubmitting(true);
     try {
-      // Upload photos
+      // Upload photos (replace any existing set so re-edits don't pile up)
       const uploaded: { url: string; position: number; is_primary: boolean }[] = [];
       for (let i = 0; i < photos.length; i++) {
         const p = photos[i];
@@ -86,6 +109,8 @@ function Onboarding() {
         uploaded.push({ url: pub.publicUrl, position: i, is_primary: i === 0 });
       }
       if (uploaded.length) {
+        // Wipe previous photos so the new set is the source of truth
+        await supabase.from("photos").delete().eq("user_id", user.id);
         const { error: phErr } = await supabase
           .from("photos")
           .insert(uploaded.map((u) => ({ ...u, user_id: user.id })));
@@ -112,8 +137,8 @@ function Onboarding() {
         .eq("id", user.id);
       if (profErr) throw profErr;
 
-      // assign default role
-      await supabase.from("user_roles").insert({ user_id: user.id, role: "user" });
+      // assign default role (idempotent)
+      await supabase.from("user_roles").upsert({ user_id: user.id, role: "user" }, { onConflict: "user_id,role", ignoreDuplicates: true });
 
       // log location once
       if (coords) {
