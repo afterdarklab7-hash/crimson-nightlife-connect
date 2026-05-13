@@ -33,6 +33,23 @@ function Onboarding() {
     if (!loading && !user) navigate({ to: "/auth", search: { mode: "signin" as const } });
   }, [loading, user, navigate]);
 
+  // Prefill from existing profile so re-edits don't wipe data
+  useEffect(() => {
+    if (!user) return;
+    void (async () => {
+      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+      if (!data) return;
+      if (data.full_name) setFullName(data.full_name);
+      if (data.username) setUsername(data.username);
+      if (data.dob) setDob(data.dob);
+      if (data.gender) setGender(data.gender);
+      if (data.hosting) setHosting(data.hosting);
+      if (data.bio) setBio(data.bio);
+      if (data.city) setCity(data.city);
+      if (data.lat && data.lng) setCoords({ lat: data.lat, lng: data.lng });
+    })();
+  }, [user]);
+
   const handlePhotoPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     const next = files.slice(0, 6 - photos.length).map((f) => ({ file: f, url: URL.createObjectURL(f) }));
