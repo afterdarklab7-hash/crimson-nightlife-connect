@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ArrowLeft, Send, Loader2, Sparkles, Wand2, Mic, Square, X,
-  Reply, Smile, Check, CheckCheck, Play, Pause, Trash2,
+  ArrowLeft, Send, Loader2, Sparkles, Wand2, Mic, X,
+  Reply, CheckCheck, Play, Pause, Trash2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -532,5 +532,3 @@ function Bubble({
   );
 }
 
-// Suppress unused-import warning when tree-shaken in some builds
-void Check; void Smile;
