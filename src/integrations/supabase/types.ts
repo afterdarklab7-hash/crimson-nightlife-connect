@@ -86,33 +86,74 @@ export type Database = {
         }
         Relationships: []
       }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
-          body: string
+          body: string | null
           created_at: string
           id: string
           match_id: string
           read_at: string | null
           recipient_id: string
+          reply_to_id: string | null
           sender_id: string
+          voice_duration_ms: number | null
+          voice_url: string | null
         }
         Insert: {
-          body: string
+          body?: string | null
           created_at?: string
           id?: string
           match_id: string
           read_at?: string | null
           recipient_id: string
+          reply_to_id?: string | null
           sender_id: string
+          voice_duration_ms?: number | null
+          voice_url?: string | null
         }
         Update: {
-          body?: string
+          body?: string | null
           created_at?: string
           id?: string
           match_id?: string
           read_at?: string | null
           recipient_id?: string
+          reply_to_id?: string | null
           sender_id?: string
+          voice_duration_ms?: number | null
+          voice_url?: string | null
         }
         Relationships: [
           {
@@ -120,6 +161,13 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
         ]
