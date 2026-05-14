@@ -234,6 +234,34 @@ function Onboarding() {
                   ))}
                 </div>
               </div>
+              <div>
+                <span className="mb-2 block text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Interested in</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { v: "female", l: "Women" },
+                    { v: "male", l: "Men" },
+                    { v: "non_binary", l: "Non-binary" },
+                    { v: "everyone", l: "Everyone" },
+                  ].map((o) => {
+                    const active = interestedIn.includes(o.v);
+                    return (
+                      <Chip
+                        key={o.v}
+                        active={active}
+                        onClick={() => {
+                          setInterestedIn((arr) => {
+                            if (o.v === "everyone") return active ? [] : ["female", "male", "non_binary"];
+                            const next = active ? arr.filter((x) => x !== o.v) : [...arr.filter((x) => x !== "everyone"), o.v];
+                            return next;
+                          });
+                        }}
+                      >
+                        {o.l}
+                      </Chip>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         )}
