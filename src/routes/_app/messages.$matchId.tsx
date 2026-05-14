@@ -142,6 +142,20 @@ function Thread() {
       </div>
 
       <div className="safe-bottom border-t border-border/60 bg-coal/90 p-3 backdrop-blur-xl">
+        {msgs.length === 0 && (
+          <div className="mb-2 -mx-1 flex gap-2 overflow-x-auto pb-1">
+            {PICKUP_LINES.map((line) => (
+              <button
+                key={line}
+                type="button"
+                onClick={() => setBody(line)}
+                className="shrink-0 rounded-full border border-blood/40 bg-blood/10 px-3 py-1.5 text-[11px] text-foreground/90 hover:bg-blood/20"
+              >
+                {line}
+              </button>
+            ))}
+          </div>
+        )}
         {!freeChat && (
           freeLeft > 0 ? (
             <p className="mb-2 text-center text-[10px] uppercase tracking-wider text-muted-foreground">
