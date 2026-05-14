@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Loader2, Sparkles, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -10,6 +10,16 @@ export const Route = createFileRoute("/_app/messages/$matchId")({
 });
 
 type Msg = { id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
+
+const PICKUP_LINES = [
+  "Tell me one thing about tonight that I'd never guess.",
+  "If we skipped small talk, what would you ask me first?",
+  "What's a song that always works on you?",
+  "Hosting, hosted, or somewhere in between tonight?",
+  "Be honest — what made you swipe?",
+  "What's the most unexpected thing about you after dark?",
+  "Coffee at sunrise or cocktails at midnight?",
+];
 
 function Thread() {
   const { matchId } = Route.useParams();
