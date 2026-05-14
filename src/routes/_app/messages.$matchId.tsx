@@ -166,6 +166,14 @@ function Thread() {
           ) : null
         )}
         <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex items-end gap-2">
+          <button
+            type="button"
+            aria-label="Pickup line"
+            onClick={() => setBody(PICKUP_LINES[Math.floor(Math.random() * PICKUP_LINES.length)])}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border bg-card/60 text-blood hover:bg-card"
+          >
+            <Wand2 className="h-5 w-5" />
+          </button>
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
