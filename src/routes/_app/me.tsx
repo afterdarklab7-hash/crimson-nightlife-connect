@@ -101,7 +101,9 @@ function Me() {
             sub={(profile as unknown as { is_hidden?: boolean })?.is_hidden ? "Your profile is hidden" : "Browse without being seen"}
             onClick={toggleHidden}
           />
-          <Row icon={<Shield className="h-4 w-4 text-blood" />} label={isAdmin ? "Admin console" : "Become admin"} sub={isAdmin ? "Manage everything" : "Claim ownership"} onClick={() => navigate({ to: "/admin" })} />
+          {isAdmin && (
+            <Row icon={<Shield className="h-4 w-4 text-blood" />} label="Admin console" sub="Manage everything" onClick={() => navigate({ to: "/admin" })} />
+          )}
           <Row icon={<LogOut className="h-4 w-4 text-blood" />} label="Sign out" sub="See you tonight" onClick={async () => { await signOut(); navigate({ to: "/" }); }} />
         </ul>
 

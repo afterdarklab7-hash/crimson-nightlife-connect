@@ -10,7 +10,7 @@ export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
 });
 
-type Step = 0 | 1 | 2 | 3 | 4;
+type Step = 0 | 1 | 2 | 3 | 4 | 5;
 
 function Onboarding() {
   const { user, loading, refreshProfile } = useAuth();
