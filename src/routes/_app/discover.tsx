@@ -69,14 +69,15 @@ function Discover() {
 
       const { data: profs, error } = await supabase
         .from("profiles")
-        .select("id, username, full_name, bio, dob, city, hosting, is_verified, is_vip, lat, lng")
+        .select("id, username, full_name, bio, dob, city, hosting, gender, is_verified, is_vip, lat, lng")
         .eq("onboarded", true)
         .eq("is_hidden", false)
         .eq("is_banned", false)
         .limit(50);
       if (error) throw error;
 
-      const filtered = (profs ?? []).filter((p) => !excluded.has(p.id));
+      const wants = ((profile as unknown as { interested_in?: string[] })?.interested_in) ?? [];
+      const filtered = (profs ?? []).filter((p) => !excluded.has(p.id) && (wants.length === 0 || wants.includes((p as unknown as { gender?: string }).gender ?? "")));
       const ids = filtered.map((p) => p.id);
       const photoMap = new Map<string, Candidate["photos"]>();
       if (ids.length) {

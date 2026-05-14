@@ -10,7 +10,7 @@ export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
 });
 
-type Step = 0 | 1 | 2 | 3 | 4;
+type Step = 0 | 1 | 2 | 3 | 4 | 5;
 
 function Onboarding() {
   const { user, loading, refreshProfile } = useAuth();
@@ -24,6 +24,7 @@ function Onboarding() {
   const [dob, setDob] = useState("");
   const [gender, setGender] = useState<string>("");
   const [hosting, setHosting] = useState<string>("");
+  const [interestedIn, setInterestedIn] = useState<string[]>([]);
   const [bio, setBio] = useState("");
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -44,6 +45,7 @@ function Onboarding() {
       if (data.dob) setDob(data.dob);
       if (data.gender) setGender(data.gender);
       if (data.hosting) setHosting(data.hosting);
+      if (Array.isArray((data as { interested_in?: string[] }).interested_in)) setInterestedIn((data as { interested_in: string[] }).interested_in);
       if (data.bio) setBio(data.bio);
       if (data.city) setCity(data.city);
       if (data.lat && data.lng) setCoords({ lat: data.lat, lng: data.lng });
@@ -87,7 +89,7 @@ function Onboarding() {
 
   const canNext = (): boolean => {
     if (step === 0) return fullName.trim().length >= 2 && /^[a-z0-9_]{3,20}$/i.test(username);
-    if (step === 1) return ageOk && !!gender;
+    if (step === 1) return ageOk && !!gender && interestedIn.length > 0;
     if (step === 2) return !!hosting;
     if (step === 3) return photos.length >= 1 || hasExistingPhotos;
     return true;
@@ -128,6 +130,8 @@ function Onboarding() {
           gender: gender as any,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           hosting: hosting as any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          interested_in: interestedIn as any,
           bio,
           city: city || null,
           lat: coords?.lat ?? null,
@@ -228,6 +232,34 @@ function Onboarding() {
                       {o.l}
                     </Chip>
                   ))}
+                </div>
+              </div>
+              <div>
+                <span className="mb-2 block text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Interested in</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { v: "female", l: "Women" },
+                    { v: "male", l: "Men" },
+                    { v: "non_binary", l: "Non-binary" },
+                    { v: "everyone", l: "Everyone" },
+                  ].map((o) => {
+                    const active = interestedIn.includes(o.v);
+                    return (
+                      <Chip
+                        key={o.v}
+                        active={active}
+                        onClick={() => {
+                          setInterestedIn((arr) => {
+                            if (o.v === "everyone") return active ? [] : ["female", "male", "non_binary"];
+                            const next = active ? arr.filter((x) => x !== o.v) : [...arr.filter((x) => x !== "everyone"), o.v];
+                            return next;
+                          });
+                        }}
+                      >
+                        {o.l}
+                      </Chip>
+                    );
+                  })}
                 </div>
               </div>
             </div>

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { MobileNav } from "@/components/layout/MobileNav";
 
-export const Route = createFileRoute("/_app/messages")({
+export const Route = createFileRoute("/_app/messages/")({
   component: Threads,
 });
 

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Loader2, Sparkles, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -10,6 +10,16 @@ export const Route = createFileRoute("/_app/messages/$matchId")({
 });
 
 type Msg = { id: string; sender_id: string; recipient_id: string; body: string; created_at: string; read_at: string | null };
+
+const PICKUP_LINES = [
+  "Tell me one thing about tonight that I'd never guess.",
+  "If we skipped small talk, what would you ask me first?",
+  "What's a song that always works on you?",
+  "Hosting, hosted, or somewhere in between tonight?",
+  "Be honest — what made you swipe?",
+  "What's the most unexpected thing about you after dark?",
+  "Coffee at sunrise or cocktails at midnight?",
+];
 
 function Thread() {
   const { matchId } = Route.useParams();
@@ -132,6 +142,20 @@ function Thread() {
       </div>
 
       <div className="safe-bottom border-t border-border/60 bg-coal/90 p-3 backdrop-blur-xl">
+        {msgs.length === 0 && (
+          <div className="mb-2 -mx-1 flex gap-2 overflow-x-auto pb-1">
+            {PICKUP_LINES.map((line) => (
+              <button
+                key={line}
+                type="button"
+                onClick={() => setBody(line)}
+                className="shrink-0 rounded-full border border-blood/40 bg-blood/10 px-3 py-1.5 text-[11px] text-foreground/90 hover:bg-blood/20"
+              >
+                {line}
+              </button>
+            ))}
+          </div>
+        )}
         {!freeChat && (
           freeLeft > 0 ? (
             <p className="mb-2 text-center text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -142,6 +166,14 @@ function Thread() {
           ) : null
         )}
         <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex items-end gap-2">
+          <button
+            type="button"
+            aria-label="Pickup line"
+            onClick={() => setBody(PICKUP_LINES[Math.floor(Math.random() * PICKUP_LINES.length)])}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border bg-card/60 text-blood hover:bg-card"
+          >
+            <Wand2 className="h-5 w-5" />
+          </button>
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
