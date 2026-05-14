@@ -89,7 +89,7 @@ function Onboarding() {
 
   const canNext = (): boolean => {
     if (step === 0) return fullName.trim().length >= 2 && /^[a-z0-9_]{3,20}$/i.test(username);
-    if (step === 1) return ageOk && !!gender;
+    if (step === 1) return ageOk && !!gender && interestedIn.length > 0;
     if (step === 2) return !!hosting;
     if (step === 3) return photos.length >= 1 || hasExistingPhotos;
     return true;
@@ -130,6 +130,8 @@ function Onboarding() {
           gender: gender as any,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           hosting: hosting as any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          interested_in: interestedIn as any,
           bio,
           city: city || null,
           lat: coords?.lat ?? null,
