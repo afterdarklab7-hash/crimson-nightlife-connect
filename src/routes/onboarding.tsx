@@ -24,6 +24,7 @@ function Onboarding() {
   const [dob, setDob] = useState("");
   const [gender, setGender] = useState<string>("");
   const [hosting, setHosting] = useState<string>("");
+  const [interestedIn, setInterestedIn] = useState<string[]>([]);
   const [bio, setBio] = useState("");
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -44,6 +45,7 @@ function Onboarding() {
       if (data.dob) setDob(data.dob);
       if (data.gender) setGender(data.gender);
       if (data.hosting) setHosting(data.hosting);
+      if (Array.isArray((data as { interested_in?: string[] }).interested_in)) setInterestedIn((data as { interested_in: string[] }).interested_in);
       if (data.bio) setBio(data.bio);
       if (data.city) setCity(data.city);
       if (data.lat && data.lng) setCoords({ lat: data.lat, lng: data.lng });
