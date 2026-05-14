@@ -43,7 +43,7 @@ function Threads() {
     const lastMap = new Map<string, { body: string; created_at: string }>();
     const unreadMap = new Map<string, number>();
     for (const m of msgs ?? []) {
-      if (!lastMap.has(m.match_id)) lastMap.set(m.match_id, { body: m.body, created_at: m.created_at });
+      if (!lastMap.has(m.match_id)) lastMap.set(m.match_id, { body: m.body ?? "🎙️ Voice note", created_at: m.created_at });
       if (m.recipient_id === user.id && !m.read_at) unreadMap.set(m.match_id, (unreadMap.get(m.match_id) ?? 0) + 1);
     }
     setItems(ms.map((m) => {
