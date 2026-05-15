@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Heart, X, Star, MapPin, Loader2, Filter, Sparkles, ShieldCheck } from "lucide-react";
+import { Heart, X, Star, MapPin, Loader2, Sparkles, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { MobileNav } from "@/components/layout/MobileNav";
@@ -52,12 +52,22 @@ function Discover() {
   const [idx, setIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [swiping, setSwiping] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [ageMin, setAgeMin] = useState<number>(() => Number(localStorage.getItem("ad_age_min") ?? 18));
+  const [ageMax, setAgeMax] = useState<number>(() => Number(localStorage.getItem("ad_age_max") ?? 60));
+  const [maxKm, setMaxKm] = useState<number>(() => Number(localStorage.getItem("ad_max_km") ?? 100));
+
+  useEffect(() => {
+    localStorage.setItem("ad_age_min", String(ageMin));
+    localStorage.setItem("ad_age_max", String(ageMax));
+    localStorage.setItem("ad_max_km", String(maxKm));
+  }, [ageMin, ageMax, maxKm]);
 
   useEffect(() => {
     if (!user) return;
     void loadCandidates();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.id, ageMin, ageMax, maxKm]);
 
   const loadCandidates = async () => {
     if (!user) return;
@@ -77,7 +87,18 @@ function Discover() {
       if (error) throw error;
 
       const wants = ((profile as unknown as { interested_in?: string[] })?.interested_in) ?? [];
-      const filtered = (profs ?? []).filter((p) => !excluded.has(p.id) && (wants.length === 0 || wants.includes((p as unknown as { gender?: string }).gender ?? "")));
+      const me = profile?.lat && profile?.lng ? { lat: profile.lat, lng: profile.lng } : null;
+      const filtered = (profs ?? []).filter((p) => {
+        if (excluded.has(p.id)) return false;
+        const g = (p as unknown as { gender?: string }).gender ?? "";
+        if (wants.length > 0 && !wants.includes(g)) return false;
+        const age = calcAge(p.dob);
+        if (age !== null && (age < ageMin || age > ageMax)) return false;
+        if (me && p.lat && p.lng) {
+          if (distKm(me, { lat: p.lat, lng: p.lng }) > maxKm) return false;
+        }
+        return true;
+      });
       const ids = filtered.map((p) => p.id);
       const photoMap = new Map<string, Candidate["photos"]>();
       if (ids.length) {
@@ -93,8 +114,6 @@ function Discover() {
         }
       }
       const enriched = filtered.map((p) => ({ ...p, photos: photoMap.get(p.id) ?? [] }));
-      // Sort by distance when we know the viewer's location
-      const me = profile?.lat && profile?.lng ? { lat: profile.lat, lng: profile.lng } : null;
       if (me) {
         enriched.sort((a, b) => {
           const da = a.lat && a.lng ? distKm(me, { lat: a.lat, lng: a.lng }) : Number.POSITIVE_INFINITY;
@@ -143,10 +162,31 @@ function Discover() {
 
       <header className="relative z-10 flex items-center justify-between px-5 pt-6 safe-top">
         <Logo />
-        <button className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-card/40 backdrop-blur">
-          <Filter className="h-4 w-4" />
+        <button onClick={() => setShowFilters((s) => !s)} className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-card/40 backdrop-blur">
+          <SlidersHorizontal className="h-4 w-4" />
         </button>
       </header>
+
+      {showFilters && (
+        <div className="relative z-10 mx-auto mt-4 max-w-md rounded-2xl border border-border/60 bg-card/80 p-5 backdrop-blur space-y-5 mx-5">
+          <div>
+            <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              <span>Age</span><span className="text-foreground">{ageMin} – {ageMax}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <input type="range" min={18} max={80} value={ageMin} onChange={(e) => setAgeMin(Math.min(Number(e.target.value), ageMax))} className="flex-1 accent-[hsl(var(--blood))]" />
+              <input type="range" min={18} max={80} value={ageMax} onChange={(e) => setAgeMax(Math.max(Number(e.target.value), ageMin))} className="flex-1 accent-[hsl(var(--blood))]" />
+            </div>
+          </div>
+          <div>
+            <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              <span>Max distance</span><span className="text-foreground">{maxKm} km</span>
+            </div>
+            <input type="range" min={1} max={500} value={maxKm} onChange={(e) => setMaxKm(Number(e.target.value))} className="w-full accent-[hsl(var(--blood))]" />
+          </div>
+          <p className="text-[11px] text-muted-foreground">Showing {candidates.length} matches based on your preferences.</p>
+        </div>
+      )}
 
       <main className="relative z-10 mx-auto max-w-md px-5 pt-6">
         {loading ? (
