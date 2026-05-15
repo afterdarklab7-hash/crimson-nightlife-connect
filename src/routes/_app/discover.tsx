@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Heart, X, Star, MapPin, Loader2, Filter, Sparkles, ShieldCheck } from "lucide-react";
+import { Heart, X, Star, MapPin, Loader2, Filter, Sparkles, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { MobileNav } from "@/components/layout/MobileNav";
