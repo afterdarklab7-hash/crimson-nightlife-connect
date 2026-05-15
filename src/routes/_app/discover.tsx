@@ -162,10 +162,31 @@ function Discover() {
 
       <header className="relative z-10 flex items-center justify-between px-5 pt-6 safe-top">
         <Logo />
-        <button className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-card/40 backdrop-blur">
-          <Filter className="h-4 w-4" />
+        <button onClick={() => setShowFilters((s) => !s)} className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-card/40 backdrop-blur">
+          <SlidersHorizontal className="h-4 w-4" />
         </button>
       </header>
+
+      {showFilters && (
+        <div className="relative z-10 mx-auto mt-4 max-w-md rounded-2xl border border-border/60 bg-card/80 p-5 backdrop-blur space-y-5 mx-5">
+          <div>
+            <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              <span>Age</span><span className="text-foreground">{ageMin} – {ageMax}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <input type="range" min={18} max={80} value={ageMin} onChange={(e) => setAgeMin(Math.min(Number(e.target.value), ageMax))} className="flex-1 accent-[hsl(var(--blood))]" />
+              <input type="range" min={18} max={80} value={ageMax} onChange={(e) => setAgeMax(Math.max(Number(e.target.value), ageMin))} className="flex-1 accent-[hsl(var(--blood))]" />
+            </div>
+          </div>
+          <div>
+            <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              <span>Max distance</span><span className="text-foreground">{maxKm} km</span>
+            </div>
+            <input type="range" min={1} max={500} value={maxKm} onChange={(e) => setMaxKm(Number(e.target.value))} className="w-full accent-[hsl(var(--blood))]" />
+          </div>
+          <p className="text-[11px] text-muted-foreground">Showing {candidates.length} matches based on your preferences.</p>
+        </div>
+      )}
 
       <main className="relative z-10 mx-auto max-w-md px-5 pt-6">
         {loading ? (
