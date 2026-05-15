@@ -52,12 +52,22 @@ function Discover() {
   const [idx, setIdx] = useState(0);
   const [loading, setLoading] = useState(true);
   const [swiping, setSwiping] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [ageMin, setAgeMin] = useState<number>(() => Number(localStorage.getItem("ad_age_min") ?? 18));
+  const [ageMax, setAgeMax] = useState<number>(() => Number(localStorage.getItem("ad_age_max") ?? 60));
+  const [maxKm, setMaxKm] = useState<number>(() => Number(localStorage.getItem("ad_max_km") ?? 100));
+
+  useEffect(() => {
+    localStorage.setItem("ad_age_min", String(ageMin));
+    localStorage.setItem("ad_age_max", String(ageMax));
+    localStorage.setItem("ad_max_km", String(maxKm));
+  }, [ageMin, ageMax, maxKm]);
 
   useEffect(() => {
     if (!user) return;
     void loadCandidates();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
+  }, [user?.id, ageMin, ageMax, maxKm]);
 
   const loadCandidates = async () => {
     if (!user) return;
