@@ -87,7 +87,18 @@ function Discover() {
       if (error) throw error;
 
       const wants = ((profile as unknown as { interested_in?: string[] })?.interested_in) ?? [];
-      const filtered = (profs ?? []).filter((p) => !excluded.has(p.id) && (wants.length === 0 || wants.includes((p as unknown as { gender?: string }).gender ?? "")));
+      const me = profile?.lat && profile?.lng ? { lat: profile.lat, lng: profile.lng } : null;
+      const filtered = (profs ?? []).filter((p) => {
+        if (excluded.has(p.id)) return false;
+        const g = (p as unknown as { gender?: string }).gender ?? "";
+        if (wants.length > 0 && !wants.includes(g)) return false;
+        const age = calcAge(p.dob);
+        if (age !== null && (age < ageMin || age > ageMax)) return false;
+        if (me && p.lat && p.lng) {
+          if (distKm(me, { lat: p.lat, lng: p.lng }) > maxKm) return false;
+        }
+        return true;
+      });
       const ids = filtered.map((p) => p.id);
       const photoMap = new Map<string, Candidate["photos"]>();
       if (ids.length) {
@@ -103,8 +114,6 @@ function Discover() {
         }
       }
       const enriched = filtered.map((p) => ({ ...p, photos: photoMap.get(p.id) ?? [] }));
-      // Sort by distance when we know the viewer's location
-      const me = profile?.lat && profile?.lng ? { lat: profile.lat, lng: profile.lng } : null;
       if (me) {
         enriched.sort((a, b) => {
           const da = a.lat && a.lng ? distKm(me, { lat: a.lat, lng: a.lng }) : Number.POSITIVE_INFINITY;
