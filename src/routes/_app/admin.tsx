@@ -21,10 +21,6 @@ function Admin() {
   const [adminRooms, setAdminRooms] = useState<Array<{ id: string; name: string; city: string | null; price_kes: number; is_active: boolean; capacity: number }>>([]);
   const [newRoom, setNewRoom] = useState({ name: "", city: "", price_kes: 3500, capacity: 2, cover_url: "", description: "" });
 
-  const claim = useServerFn(claimFirstAdmin);
-  const grant = useServerFn(grantRole);
-  const credit = useServerFn(adminCreditWallet);
-
   const refresh = async () => {
     if (!user) return;
     const { data: roles } = await supabase.from("user_roles").select("*").eq("user_id", user.id).eq("role", "admin").maybeSingle();
