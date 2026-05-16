@@ -1,11 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Shield, Loader2, Crown, Power, ArrowLeft, Plus, Wallet, Trash2, Eye, EyeOff } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import { claimFirstAdmin, grantRole, adminCreditWallet } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_app/admin")({
   component: Admin,
@@ -22,10 +20,6 @@ function Admin() {
   const [stats, setStats] = useState({ users: 0, matches: 0, messages: 0, bookings: 0 });
   const [adminRooms, setAdminRooms] = useState<Array<{ id: string; name: string; city: string | null; price_kes: number; is_active: boolean; capacity: number }>>([]);
   const [newRoom, setNewRoom] = useState({ name: "", city: "", price_kes: 3500, capacity: 2, cover_url: "", description: "" });
-
-  const claim = useServerFn(claimFirstAdmin);
-  const grant = useServerFn(grantRole);
-  const credit = useServerFn(adminCreditWallet);
 
   const refresh = async () => {
     if (!user) return;
@@ -56,8 +50,13 @@ function Admin() {
   useEffect(() => { refresh(); /* eslint-disable-next-line */ }, [user]);
 
   const onClaim = async () => {
-    try { const r = await claim(); if (r.ok) { toast.success("You are now admin · VIP"); await refresh(); } else toast.error(r.reason ?? "Failed"); }
-    catch (e) { toast.error((e as Error).message); }
+    try {
+      const { data, error } = await supabase.rpc("claim_first_admin");
+      if (error) throw error;
+      const r = data as { ok: boolean; reason?: string };
+      if (r.ok) { toast.success("You are now admin · VIP"); await refresh(); }
+      else toast.error(r.reason ?? "Failed");
+    } catch (e) { toast.error((e as Error).message); }
   };
 
   const toggleFree = async () => {
@@ -72,14 +71,25 @@ function Admin() {
   };
 
   const promote = async (uid: string) => {
-    try { await grant({ data: { target_user_id: uid, role: "admin" } }); toast.success("Promoted to admin"); refresh(); }
-    catch (e) { toast.error((e as Error).message); }
+    const { error } = await supabase.from("user_roles").insert({ user_id: uid, role: "admin" });
+    if (error && !error.message.includes("duplicate")) toast.error(error.message);
+    else { toast.success("Promoted to admin"); refresh(); }
   };
 
   const giveCredit = async (uid: string) => {
     const v = prompt("Credit how many KES?"); if (!v) return;
-    try { const r = await credit({ data: { user_id: uid, amount_kes: Number(v) } }); toast.success("Balance now KES " + r.balance); }
-    catch (e) { toast.error((e as Error).message); }
+    const amount = Number(v);
+    if (!Number.isFinite(amount) || amount <= 0) { toast.error("Invalid amount"); return; }
+    try {
+      await supabase.from("wallets").upsert({ user_id: uid, balance_kes: 0 }, { onConflict: "user_id", ignoreDuplicates: true });
+      const { data: w, error: wErr } = await supabase.from("wallets").select("balance_kes").eq("user_id", uid).single();
+      if (wErr) throw wErr;
+      const next = Number(w?.balance_kes ?? 0) + amount;
+      const { error: uErr } = await supabase.from("wallets").update({ balance_kes: next, updated_at: new Date().toISOString() }).eq("user_id", uid);
+      if (uErr) throw uErr;
+      await supabase.from("wallet_transactions").insert({ user_id: uid, amount_kes: amount, kind: "admin_credit" });
+      toast.success("Balance now KES " + next);
+    } catch (e) { toast.error((e as Error).message); }
   };
 
   const addRoom = async (e: React.FormEvent) => {
