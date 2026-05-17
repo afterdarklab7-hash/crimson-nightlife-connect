@@ -20,6 +20,7 @@ import { Route as AppDiscoverRouteImport } from './routes/_app/discover'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppMessagesIndexRouteImport } from './routes/_app/messages.index'
 import { Route as AppMessagesMatchIdRouteImport } from './routes/_app/messages.$matchId'
+import { Route as ApiPublicMpesaB2cResultRouteImport } from './routes/api/public/mpesa/b2c-result'
 import { Route as ApiPublicIntasendWebhookRouteImport } from './routes/api/public/intasend/webhook'
 
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -76,6 +77,11 @@ const AppMessagesMatchIdRoute = AppMessagesMatchIdRouteImport.update({
   path: '/messages/$matchId',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicMpesaB2cResultRoute = ApiPublicMpesaB2cResultRouteImport.update({
+  id: '/api/public/mpesa/b2c-result',
+  path: '/api/public/mpesa/b2c-result',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicIntasendWebhookRoute =
   ApiPublicIntasendWebhookRouteImport.update({
     id: '/api/public/intasend/webhook',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/messages/$matchId': typeof AppMessagesMatchIdRoute
   '/messages/': typeof AppMessagesIndexRoute
   '/api/public/intasend/webhook': typeof ApiPublicIntasendWebhookRoute
+  '/api/public/mpesa/b2c-result': typeof ApiPublicMpesaB2cResultRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/messages/$matchId': typeof AppMessagesMatchIdRoute
   '/messages': typeof AppMessagesIndexRoute
   '/api/public/intasend/webhook': typeof ApiPublicIntasendWebhookRoute
+  '/api/public/mpesa/b2c-result': typeof ApiPublicMpesaB2cResultRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/_app/messages/$matchId': typeof AppMessagesMatchIdRoute
   '/_app/messages/': typeof AppMessagesIndexRoute
   '/api/public/intasend/webhook': typeof ApiPublicIntasendWebhookRoute
+  '/api/public/mpesa/b2c-result': typeof ApiPublicMpesaB2cResultRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/messages/$matchId'
     | '/messages/'
     | '/api/public/intasend/webhook'
+    | '/api/public/mpesa/b2c-result'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/messages/$matchId'
     | '/messages'
     | '/api/public/intasend/webhook'
+    | '/api/public/mpesa/b2c-result'
   id:
     | '__root__'
     | '/'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/_app/messages/$matchId'
     | '/_app/messages/'
     | '/api/public/intasend/webhook'
+    | '/api/public/mpesa/b2c-result'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -173,6 +185,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
   ApiPublicIntasendWebhookRoute: typeof ApiPublicIntasendWebhookRoute
+  ApiPublicMpesaB2cResultRoute: typeof ApiPublicMpesaB2cResultRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -254,6 +267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMessagesMatchIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/mpesa/b2c-result': {
+      id: '/api/public/mpesa/b2c-result'
+      path: '/api/public/mpesa/b2c-result'
+      fullPath: '/api/public/mpesa/b2c-result'
+      preLoaderRoute: typeof ApiPublicMpesaB2cResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/intasend/webhook': {
       id: '/api/public/intasend/webhook'
       path: '/api/public/intasend/webhook'
@@ -292,6 +312,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
   ApiPublicIntasendWebhookRoute: ApiPublicIntasendWebhookRoute,
+  ApiPublicMpesaB2cResultRoute: ApiPublicMpesaB2cResultRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
