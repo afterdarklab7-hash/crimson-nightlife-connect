@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { TopUpDialog } from "@/components/wallet/TopUpDialog";
 
 export const Route = createFileRoute("/_app/me")({
   component: Me,
