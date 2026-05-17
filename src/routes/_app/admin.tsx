@@ -22,6 +22,10 @@ function Admin() {
   const [stats, setStats] = useState({ users: 0, matches: 0, messages: 0, bookings: 0 });
   const [adminRooms, setAdminRooms] = useState<Array<{ id: string; name: string; city: string | null; price_kes: number; is_active: boolean; capacity: number }>>([]);
   const [newRoom, setNewRoom] = useState({ name: "", city: "", price_kes: 3500, capacity: 2, cover_url: "", description: "" });
+  const [wd, setWd] = useState({ phone: "", amount_kes: 1000, remarks: "Payout" });
+  const [wdBusy, setWdBusy] = useState(false);
+  const [wdHistory, setWdHistory] = useState<Array<{ id: string; phone: string; amount_kes: number; status: string; created_at: string }>>([]);
+  const b2cFn = useServerFn(adminB2CWithdraw);
 
   const refresh = async () => {
     if (!user) return;
