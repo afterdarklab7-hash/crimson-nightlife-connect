@@ -65,11 +65,11 @@ export const Route = createFileRoute("/api/public/intasend/webhook")({
             });
           }
           await supabaseAdmin.from("topup_intents").update({
-            status: "paid", raw: payload as object, updated_at: new Date().toISOString(),
+            status: "paid", raw: payload as never, updated_at: new Date().toISOString(),
           }).eq("id", intent.id);
         } else if (verifiedState === "FAILED" || verifiedState === "CANCELLED") {
           await supabaseAdmin.from("topup_intents").update({
-            status: "failed", raw: payload as object, updated_at: new Date().toISOString(),
+            status: "failed", raw: payload as never, updated_at: new Date().toISOString(),
           }).eq("id", intent.id);
         }
 

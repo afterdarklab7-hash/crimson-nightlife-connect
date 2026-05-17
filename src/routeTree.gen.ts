@@ -20,6 +20,7 @@ import { Route as AppDiscoverRouteImport } from './routes/_app/discover'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppMessagesIndexRouteImport } from './routes/_app/messages.index'
 import { Route as AppMessagesMatchIdRouteImport } from './routes/_app/messages.$matchId'
+import { Route as ApiPublicIntasendWebhookRouteImport } from './routes/api/public/intasend/webhook'
 
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
@@ -75,6 +76,12 @@ const AppMessagesMatchIdRoute = AppMessagesMatchIdRouteImport.update({
   path: '/messages/$matchId',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicIntasendWebhookRoute =
+  ApiPublicIntasendWebhookRouteImport.update({
+    id: '/api/public/intasend/webhook',
+    path: '/api/public/intasend/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/rooms': typeof AppRoomsRoute
   '/messages/$matchId': typeof AppMessagesMatchIdRoute
   '/messages/': typeof AppMessagesIndexRoute
+  '/api/public/intasend/webhook': typeof ApiPublicIntasendWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -99,6 +107,7 @@ export interface FileRoutesByTo {
   '/rooms': typeof AppRoomsRoute
   '/messages/$matchId': typeof AppMessagesMatchIdRoute
   '/messages': typeof AppMessagesIndexRoute
+  '/api/public/intasend/webhook': typeof ApiPublicIntasendWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,6 +122,7 @@ export interface FileRoutesById {
   '/_app/rooms': typeof AppRoomsRoute
   '/_app/messages/$matchId': typeof AppMessagesMatchIdRoute
   '/_app/messages/': typeof AppMessagesIndexRoute
+  '/api/public/intasend/webhook': typeof ApiPublicIntasendWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/rooms'
     | '/messages/$matchId'
     | '/messages/'
+    | '/api/public/intasend/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/rooms'
     | '/messages/$matchId'
     | '/messages'
+    | '/api/public/intasend/webhook'
   id:
     | '__root__'
     | '/'
@@ -152,6 +164,7 @@ export interface FileRouteTypes {
     | '/_app/rooms'
     | '/_app/messages/$matchId'
     | '/_app/messages/'
+    | '/api/public/intasend/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -159,6 +172,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
+  ApiPublicIntasendWebhookRoute: typeof ApiPublicIntasendWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -240,6 +254,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMessagesMatchIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/intasend/webhook': {
+      id: '/api/public/intasend/webhook'
+      path: '/api/public/intasend/webhook'
+      fullPath: '/api/public/intasend/webhook'
+      preLoaderRoute: typeof ApiPublicIntasendWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -270,6 +291,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
+  ApiPublicIntasendWebhookRoute: ApiPublicIntasendWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
