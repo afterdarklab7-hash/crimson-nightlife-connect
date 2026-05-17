@@ -49,6 +49,8 @@ function Admin() {
       setUsers((us ?? []) as never);
       setStats({ users: uc.count ?? 0, matches: mc.count ?? 0, messages: msgc.count ?? 0, bookings: bc.count ?? 0 });
       setAdminRooms((rms ?? []) as never);
+      const { data: wds } = await supabase.from("withdrawals").select("id, phone, amount_kes, status, created_at").order("created_at", { ascending: false }).limit(10);
+      setWdHistory((wds ?? []) as never);
     }
     setLoading(false);
   };
