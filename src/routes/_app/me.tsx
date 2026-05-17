@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { TopUpDialog } from "@/components/wallet/TopUpDialog";
 
 export const Route = createFileRoute("/_app/me")({
   component: Me,
@@ -16,12 +17,19 @@ function Me() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [balance, setBalance] = useState<number>(0);
+  const [topupOpen, setTopupOpen] = useState(false);
+
+  const loadBalance = () => {
+    if (!user) return;
+    supabase.from("wallets").select("balance_kes").eq("user_id", user.id).maybeSingle().then(({ data }) => setBalance(Number(data?.balance_kes ?? 0)));
+  };
 
   useEffect(() => {
     if (!user) return;
     supabase.from("photos").select("url, is_primary, created_at").eq("user_id", user.id).order("is_primary", { ascending: false }).order("created_at", { ascending: false }).limit(1).maybeSingle().then(({ data }) => setPhoto(data?.url ?? null));
     supabase.from("user_roles").select("id").eq("user_id", user.id).eq("role", "admin").maybeSingle().then(({ data }) => setIsAdmin(!!data));
-    supabase.from("wallets").select("balance_kes").eq("user_id", user.id).maybeSingle().then(({ data }) => setBalance(Number(data?.balance_kes ?? 0)));
+    loadBalance();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const toggleHidden = async () => {
@@ -90,8 +98,10 @@ function Me() {
               <p className="font-display text-xl">KES {balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
             </div>
           </div>
-          <span className="rounded-full border border-border/60 bg-card/40 px-2.5 py-1 text-[9px] uppercase tracking-wider text-muted-foreground">M-Pesa soon</span>
+          <button onClick={() => setTopupOpen(true)} className="rounded-full bg-blood-gradient px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-white glow-blood">Top up</button>
         </div>
+
+        <TopUpDialog open={topupOpen} onClose={() => setTopupOpen(false)} onPaid={loadBalance} />
 
         <ul className="mt-4 space-y-2">
           <Row icon={<Edit3 className="h-4 w-4" />} label="Edit profile" sub="Bio, photos, preferences" onClick={() => navigate({ to: "/onboarding" })} />

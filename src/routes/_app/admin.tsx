@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Shield, Loader2, Crown, Power, ArrowLeft, Plus, Wallet, Trash2, Eye, EyeOff } from "lucide-react";
+import { Shield, Loader2, Crown, Power, ArrowLeft, Plus, Wallet, Trash2, Eye, EyeOff, Send } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { adminB2CWithdraw } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/_app/admin")({
   component: Admin,
@@ -20,6 +22,10 @@ function Admin() {
   const [stats, setStats] = useState({ users: 0, matches: 0, messages: 0, bookings: 0 });
   const [adminRooms, setAdminRooms] = useState<Array<{ id: string; name: string; city: string | null; price_kes: number; is_active: boolean; capacity: number }>>([]);
   const [newRoom, setNewRoom] = useState({ name: "", city: "", price_kes: 3500, capacity: 2, cover_url: "", description: "" });
+  const [wd, setWd] = useState({ phone: "", amount_kes: 1000, remarks: "Payout" });
+  const [wdBusy, setWdBusy] = useState(false);
+  const [wdHistory, setWdHistory] = useState<Array<{ id: string; phone: string; amount_kes: number; status: string; created_at: string }>>([]);
+  const b2cFn = useServerFn(adminB2CWithdraw);
 
   const refresh = async () => {
     if (!user) return;
@@ -43,6 +49,8 @@ function Admin() {
       setUsers((us ?? []) as never);
       setStats({ users: uc.count ?? 0, matches: mc.count ?? 0, messages: msgc.count ?? 0, bookings: bc.count ?? 0 });
       setAdminRooms((rms ?? []) as never);
+      const { data: wds } = await supabase.from("withdrawals").select("id, phone, amount_kes, status, created_at").order("created_at", { ascending: false }).limit(10);
+      setWdHistory((wds ?? []) as never);
     }
     setLoading(false);
   };
@@ -92,12 +100,26 @@ function Admin() {
     } catch (e) { toast.error((e as Error).message); }
   };
 
+  const submitWithdraw = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!confirm(`Send KES ${wd.amount_kes} to ${wd.phone} via M-Pesa B2C?`)) return;
+    setWdBusy(true);
+    try {
+      await b2cFn({ data: { phone: wd.phone, amount_kes: Number(wd.amount_kes), remarks: wd.remarks } });
+      toast.success("Payout request sent. Tracking…");
+      setWd({ phone: "", amount_kes: 1000, remarks: "Payout" });
+      refresh();
+    } catch (err) { toast.error((err as Error).message); }
+    finally { setWdBusy(false); }
+  };
+
   const addRoom = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase.from("rooms").insert(newRoom);
     if (error) toast.error(error.message);
     else { toast.success("Room added"); setNewRoom({ name: "", city: "", price_kes: 3500, capacity: 2, cover_url: "", description: "" }); refresh(); }
   };
+
 
   const toggleRoom = async (id: string, next: boolean) => {
     const { error } = await supabase.from("rooms").update({ is_active: next }).eq("id", id);
@@ -204,6 +226,32 @@ function Admin() {
               </li>
             ))}
           </ul>
+        </section>
+
+        {/* M-Pesa B2C Withdraw */}
+        <section className="glass-card rounded-2xl p-5">
+          <h2 className="font-display text-lg flex items-center gap-2"><Send className="h-4 w-4 text-blood" /> M-Pesa payout (B2C)</h2>
+          <p className="mt-1 text-xs text-muted-foreground">Send money from the business shortcode to any M-Pesa number.</p>
+          <form onSubmit={submitWithdraw} className="mt-3 space-y-2">
+            <input required placeholder="Phone (0712…)" value={wd.phone} onChange={(e) => setWd({ ...wd, phone: e.target.value })} className="w-full rounded-2xl border border-border bg-input px-4 py-3 text-sm" inputMode="tel" />
+            <div className="grid grid-cols-2 gap-2">
+              <input required type="number" min={10} max={150000} placeholder="Amount KES" value={wd.amount_kes} onChange={(e) => setWd({ ...wd, amount_kes: Number(e.target.value) })} className="rounded-2xl border border-border bg-input px-4 py-3 text-sm" />
+              <input placeholder="Remarks" value={wd.remarks} onChange={(e) => setWd({ ...wd, remarks: e.target.value })} className="rounded-2xl border border-border bg-input px-4 py-3 text-sm" />
+            </div>
+            <button disabled={wdBusy} className="flex w-full items-center justify-center gap-2 rounded-full bg-blood-gradient py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white glow-blood disabled:opacity-50">
+              {wdBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Send payout
+            </button>
+          </form>
+          {wdHistory.length > 0 && (
+            <ul className="mt-4 divide-y divide-border/60">
+              {wdHistory.map((w) => (
+                <li key={w.id} className="flex items-center justify-between py-2 text-xs">
+                  <span>{w.phone} · KES {Number(w.amount_kes).toLocaleString()}</span>
+                  <span className={`uppercase tracking-wider text-[10px] ${w.status === "paid" ? "text-success" : w.status === "failed" || w.status === "timeout" ? "text-blood" : "text-muted-foreground"}`}>{w.status}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         {/* Users */}

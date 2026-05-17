@@ -411,6 +411,48 @@ export type Database = {
         }
         Relationships: []
       }
+      topup_intents: {
+        Row: {
+          amount_kes: number
+          api_ref: string
+          created_at: string
+          id: string
+          invoice_id: string | null
+          phone: string
+          provider: string
+          raw: Json | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_kes: number
+          api_ref: string
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          phone: string
+          provider?: string
+          raw?: Json | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_kes?: number
+          api_ref?: string
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          phone?: string
+          provider?: string
+          raw?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -477,12 +519,58 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawals: {
+        Row: {
+          amount_kes: number
+          conversation_id: string | null
+          created_at: string
+          id: string
+          initiated_by: string
+          originator_conversation_id: string | null
+          phone: string
+          raw: Json | null
+          status: string
+          target_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_kes: number
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          initiated_by: string
+          originator_conversation_id?: string | null
+          phone: string
+          raw?: Json | null
+          status?: string
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_kes?: number
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          initiated_by?: string
+          originator_conversation_id?: string | null
+          phone?: string
+          raw?: Json | null
+          status?: string
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       claim_first_admin: { Args: never; Returns: Json }
+      credit_wallet: {
+        Args: { _amount: number; _kind: string; _ref: string; _user_id: string }
+        Returns: number
+      }
       distance_km: {
         Args: { lat1: number; lat2: number; lng1: number; lng2: number }
         Returns: number
