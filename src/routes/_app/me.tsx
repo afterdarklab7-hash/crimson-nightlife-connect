@@ -17,6 +17,12 @@ function Me() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [balance, setBalance] = useState<number>(0);
+  const [topupOpen, setTopupOpen] = useState(false);
+
+  const loadBalance = () => {
+    if (!user) return;
+    supabase.from("wallets").select("balance_kes").eq("user_id", user.id).maybeSingle().then(({ data }) => setBalance(Number(data?.balance_kes ?? 0)));
+  };
 
   useEffect(() => {
     if (!user) return;
