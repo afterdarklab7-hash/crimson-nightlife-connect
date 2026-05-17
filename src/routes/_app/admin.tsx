@@ -228,6 +228,32 @@ function Admin() {
           </ul>
         </section>
 
+        {/* M-Pesa B2C Withdraw */}
+        <section className="glass-card rounded-2xl p-5">
+          <h2 className="font-display text-lg flex items-center gap-2"><Send className="h-4 w-4 text-blood" /> M-Pesa payout (B2C)</h2>
+          <p className="mt-1 text-xs text-muted-foreground">Send money from the business shortcode to any M-Pesa number.</p>
+          <form onSubmit={submitWithdraw} className="mt-3 space-y-2">
+            <input required placeholder="Phone (0712…)" value={wd.phone} onChange={(e) => setWd({ ...wd, phone: e.target.value })} className="w-full rounded-2xl border border-border bg-input px-4 py-3 text-sm" inputMode="tel" />
+            <div className="grid grid-cols-2 gap-2">
+              <input required type="number" min={10} max={150000} placeholder="Amount KES" value={wd.amount_kes} onChange={(e) => setWd({ ...wd, amount_kes: Number(e.target.value) })} className="rounded-2xl border border-border bg-input px-4 py-3 text-sm" />
+              <input placeholder="Remarks" value={wd.remarks} onChange={(e) => setWd({ ...wd, remarks: e.target.value })} className="rounded-2xl border border-border bg-input px-4 py-3 text-sm" />
+            </div>
+            <button disabled={wdBusy} className="flex w-full items-center justify-center gap-2 rounded-full bg-blood-gradient py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white glow-blood disabled:opacity-50">
+              {wdBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Send payout
+            </button>
+          </form>
+          {wdHistory.length > 0 && (
+            <ul className="mt-4 divide-y divide-border/60">
+              {wdHistory.map((w) => (
+                <li key={w.id} className="flex items-center justify-between py-2 text-xs">
+                  <span>{w.phone} · KES {Number(w.amount_kes).toLocaleString()}</span>
+                  <span className={`uppercase tracking-wider text-[10px] ${w.status === "paid" ? "text-success" : w.status === "failed" || w.status === "timeout" ? "text-blood" : "text-muted-foreground"}`}>{w.status}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
         {/* Users */}
         <section className="glass-card rounded-2xl p-5">
           <h2 className="font-display text-lg">Members ({users.length})</h2>
