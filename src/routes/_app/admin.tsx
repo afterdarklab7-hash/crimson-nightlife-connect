@@ -100,12 +100,26 @@ function Admin() {
     } catch (e) { toast.error((e as Error).message); }
   };
 
+  const submitWithdraw = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!confirm(`Send KES ${wd.amount_kes} to ${wd.phone} via M-Pesa B2C?`)) return;
+    setWdBusy(true);
+    try {
+      await b2cFn({ data: { phone: wd.phone, amount_kes: Number(wd.amount_kes), remarks: wd.remarks } });
+      toast.success("Payout request sent. Tracking…");
+      setWd({ phone: "", amount_kes: 1000, remarks: "Payout" });
+      refresh();
+    } catch (err) { toast.error((err as Error).message); }
+    finally { setWdBusy(false); }
+  };
+
   const addRoom = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase.from("rooms").insert(newRoom);
     if (error) toast.error(error.message);
     else { toast.success("Room added"); setNewRoom({ name: "", city: "", price_kes: 3500, capacity: 2, cover_url: "", description: "" }); refresh(); }
   };
+
 
   const toggleRoom = async (id: string, next: boolean) => {
     const { error } = await supabase.from("rooms").update({ is_active: next }).eq("id", id);
