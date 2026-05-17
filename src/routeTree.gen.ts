@@ -20,6 +20,7 @@ import { Route as AppDiscoverRouteImport } from './routes/_app/discover'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppMessagesIndexRouteImport } from './routes/_app/messages.index'
 import { Route as AppMessagesMatchIdRouteImport } from './routes/_app/messages.$matchId'
+import { Route as ApiPublicMpesaB2cTimeoutRouteImport } from './routes/api/public/mpesa/b2c-timeout'
 import { Route as ApiPublicMpesaB2cResultRouteImport } from './routes/api/public/mpesa/b2c-result'
 import { Route as ApiPublicIntasendWebhookRouteImport } from './routes/api/public/intasend/webhook'
 
@@ -77,6 +78,12 @@ const AppMessagesMatchIdRoute = AppMessagesMatchIdRouteImport.update({
   path: '/messages/$matchId',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicMpesaB2cTimeoutRoute =
+  ApiPublicMpesaB2cTimeoutRouteImport.update({
+    id: '/api/public/mpesa/b2c-timeout',
+    path: '/api/public/mpesa/b2c-timeout',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicMpesaB2cResultRoute = ApiPublicMpesaB2cResultRouteImport.update({
   id: '/api/public/mpesa/b2c-result',
   path: '/api/public/mpesa/b2c-result',
@@ -102,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/messages/': typeof AppMessagesIndexRoute
   '/api/public/intasend/webhook': typeof ApiPublicIntasendWebhookRoute
   '/api/public/mpesa/b2c-result': typeof ApiPublicMpesaB2cResultRoute
+  '/api/public/mpesa/b2c-timeout': typeof ApiPublicMpesaB2cTimeoutRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -116,6 +124,7 @@ export interface FileRoutesByTo {
   '/messages': typeof AppMessagesIndexRoute
   '/api/public/intasend/webhook': typeof ApiPublicIntasendWebhookRoute
   '/api/public/mpesa/b2c-result': typeof ApiPublicMpesaB2cResultRoute
+  '/api/public/mpesa/b2c-timeout': typeof ApiPublicMpesaB2cTimeoutRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -132,6 +141,7 @@ export interface FileRoutesById {
   '/_app/messages/': typeof AppMessagesIndexRoute
   '/api/public/intasend/webhook': typeof ApiPublicIntasendWebhookRoute
   '/api/public/mpesa/b2c-result': typeof ApiPublicMpesaB2cResultRoute
+  '/api/public/mpesa/b2c-timeout': typeof ApiPublicMpesaB2cTimeoutRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/messages/'
     | '/api/public/intasend/webhook'
     | '/api/public/mpesa/b2c-result'
+    | '/api/public/mpesa/b2c-timeout'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/api/public/intasend/webhook'
     | '/api/public/mpesa/b2c-result'
+    | '/api/public/mpesa/b2c-timeout'
   id:
     | '__root__'
     | '/'
@@ -177,6 +189,7 @@ export interface FileRouteTypes {
     | '/_app/messages/'
     | '/api/public/intasend/webhook'
     | '/api/public/mpesa/b2c-result'
+    | '/api/public/mpesa/b2c-timeout'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -186,6 +199,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   ApiPublicIntasendWebhookRoute: typeof ApiPublicIntasendWebhookRoute
   ApiPublicMpesaB2cResultRoute: typeof ApiPublicMpesaB2cResultRoute
+  ApiPublicMpesaB2cTimeoutRoute: typeof ApiPublicMpesaB2cTimeoutRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -267,6 +281,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMessagesMatchIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/mpesa/b2c-timeout': {
+      id: '/api/public/mpesa/b2c-timeout'
+      path: '/api/public/mpesa/b2c-timeout'
+      fullPath: '/api/public/mpesa/b2c-timeout'
+      preLoaderRoute: typeof ApiPublicMpesaB2cTimeoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/mpesa/b2c-result': {
       id: '/api/public/mpesa/b2c-result'
       path: '/api/public/mpesa/b2c-result'
@@ -313,6 +334,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   ApiPublicIntasendWebhookRoute: ApiPublicIntasendWebhookRoute,
   ApiPublicMpesaB2cResultRoute: ApiPublicMpesaB2cResultRoute,
+  ApiPublicMpesaB2cTimeoutRoute: ApiPublicMpesaB2cTimeoutRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
