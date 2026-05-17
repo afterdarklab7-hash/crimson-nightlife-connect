@@ -28,7 +28,8 @@ function Me() {
     if (!user) return;
     supabase.from("photos").select("url, is_primary, created_at").eq("user_id", user.id).order("is_primary", { ascending: false }).order("created_at", { ascending: false }).limit(1).maybeSingle().then(({ data }) => setPhoto(data?.url ?? null));
     supabase.from("user_roles").select("id").eq("user_id", user.id).eq("role", "admin").maybeSingle().then(({ data }) => setIsAdmin(!!data));
-    supabase.from("wallets").select("balance_kes").eq("user_id", user.id).maybeSingle().then(({ data }) => setBalance(Number(data?.balance_kes ?? 0)));
+    loadBalance();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const toggleHidden = async () => {
