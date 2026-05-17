@@ -97,8 +97,10 @@ function Me() {
               <p className="font-display text-xl">KES {balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
             </div>
           </div>
-          <span className="rounded-full border border-border/60 bg-card/40 px-2.5 py-1 text-[9px] uppercase tracking-wider text-muted-foreground">M-Pesa soon</span>
+          <button onClick={() => setTopupOpen(true)} className="rounded-full bg-blood-gradient px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-white glow-blood">Top up</button>
         </div>
+
+        <TopUpDialog open={topupOpen} onClose={() => setTopupOpen(false)} onPaid={loadBalance} />
 
         <ul className="mt-4 space-y-2">
           <Row icon={<Edit3 className="h-4 w-4" />} label="Edit profile" sub="Bio, photos, preferences" onClick={() => navigate({ to: "/onboarding" })} />
