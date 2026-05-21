@@ -567,6 +567,10 @@ export type Database = {
     }
     Functions: {
       claim_first_admin: { Args: never; Returns: Json }
+      create_match_direct: {
+        Args: { _user_a: string; _user_b: string }
+        Returns: string
+      }
       credit_wallet: {
         Args: { _amount: number; _kind: string; _ref: string; _user_id: string }
         Returns: number
